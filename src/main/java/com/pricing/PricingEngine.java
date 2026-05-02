@@ -1,9 +1,10 @@
 package com.pricing;
 
-import java.util.*;
+import java.util.List;
 
 public class PricingEngine {
     
+    // ========== الطريقة القديمة (للتوافق) ==========
     public double calc(List<Double> p, List<Integer> q, String ct, String dc) {
         double s = 0;
         for(int i=0; i<p.size(); i++) {
@@ -29,5 +30,49 @@ public class PricingEngine {
         System.out.println("Tax: " + t);
         
         return f;
+    }
+    
+    // ========== الطريقة المحسنة (Refactored) ==========
+    public double calculateFinalPrice(List<Double> prices, List<Integer> quantities, 
+                                       CustomerType customerType, DiscountCode discountCode) {
+        double subtotal = calculateSubtotal(prices, quantities);
+        double discount = calculateDiscount(subtotal, customerType, discountCode);
+        double tax = calculateTax(subtotal);
+        
+        printDetails(subtotal, discount, tax);
+        
+        return subtotal - discount + tax;
+    }
+    
+    private double calculateSubtotal(List<Double> prices, List<Integer> quantities) {
+        double subtotal = 0;
+        for (int i = 0; i < prices.size(); i++) {
+            subtotal += prices.get(i) * quantities.get(i);
+        }
+        return subtotal;
+    }
+    
+    private double calculateDiscount(double subtotal, CustomerType customerType, DiscountCode discountCode) {
+        double discount = 0;
+        
+        if (discountCode != null && discountCode != DiscountCode.NONE) {
+            discount = subtotal * discountCode.getRate();
+        }
+        
+        if (customerType == CustomerType.VIP) {
+            discount += subtotal * customerType.getAdditionalDiscount();
+        }
+        
+        return discount;
+    }
+    
+    private double calculateTax(double subtotal) {
+        return subtotal * 0.15;
+    }
+    
+    private void printDetails(double subtotal, double discount, double tax) {
+        System.out.println("Subtotal: " + subtotal);
+        System.out.println("Discount: " + discount);
+        System.out.println("Tax: " + tax);
     }
 }
